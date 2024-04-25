@@ -2,6 +2,7 @@ import os
 import shutil
 import subprocess
 import time
+import traceback
 import uuid
 
 from selenium import webdriver
@@ -137,6 +138,7 @@ class ProtoAssignment(py4web):
             except StopGrading:
                 break
             except Exception as e:
+                traceback.print_exc()
                 self.append_comment(0, f"Error in {step.__name__}: {e}")
         grade = 0
         for points, comment in self._comments:
@@ -164,13 +166,13 @@ class Assignment(ProtoAssignment):
         self.browser.find_element(By.CSS_SELECTOR, "input.add-item").send_keys(self.item)
         self.browser.find_element(By.CSS_SELECTOR, "i.add-item").click()
         item_places = self.browser.find_elements(By.CSS_SELECTOR, "table td.item")
-        assert self.item in [i.text for i in item_places]
+        assert self.item in [i.text for i in item_places], "The item is not added to the list."
         return 1, "Item added correctly."
 
     def step2(self):
         self.refresh()
         item_places = self.browser.find_elements(By.CSS_SELECTOR, "table td.item")
-        assert self.item in [i.text for i in item_places]
+        assert self.item in [i.text for i in item_places], "The item does not persist."
         return 2, "The item persists."
 
     def step3(self):
@@ -178,7 +180,7 @@ class Assignment(ProtoAssignment):
         self.login(self.user2)
         self.goto('index')
         item_places = self.browser.find_elements(By.CSS_SELECTOR, "table td.item")
-        assert self.item not in [i.text for i in item_places]
+        assert self.item not in [i.text for i in item_places], "The item is visible to another user."
         return 1, "The item is not visible to another user."
 
     def step4(self):
