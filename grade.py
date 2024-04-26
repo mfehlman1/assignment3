@@ -165,6 +165,7 @@ class Assignment(ProtoAssignment):
         self.item = str(uuid.uuid4())
         self.browser.find_element(By.CSS_SELECTOR, "input.add-item").send_keys(self.item)
         self.browser.find_element(By.CSS_SELECTOR, "i.add-item").click()
+        time.sleep(SERVER_WAIT)
         item_places = self.browser.find_elements(By.CSS_SELECTOR, "table td.item")
         assert self.item in [i.text for i in item_places], "The item is not added to the list."
         return 1, "Item added correctly."
@@ -236,14 +237,14 @@ class Assignment(ProtoAssignment):
         assert last_check_box.is_selected(), "The last checkbox should be selected."
         # If I click on the first item, it should become the last.
         first_check_box.click()
-        self.browser.implicitly_wait(0.2)
+        time.sleep(SERVER_WAIT)
         item_rows = self.browser.find_elements(By.CSS_SELECTOR, "table tr.item-row")
         assert self.item in item_rows[-1].text, "The new item should be moved to the last position."
         # Now if I unclick the middle row,
         middle_check_box = item_rows[1].find_element(By.CSS_SELECTOR, "td.check input")
         middle_item = item_rows[1].find_element(By.CSS_SELECTOR, "td.item").text
         middle_check_box.click()
-        self.browser.implicitly_wait(0.2)
+        time.sleep(SERVER_WAIT)
         # The middle row should be moved to the top.
         item_rows = self.browser.find_elements(By.CSS_SELECTOR, "table tr.item-row")
         assert middle_item in item_rows[0].text, "The middle item should be moved to the top."
