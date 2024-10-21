@@ -4,6 +4,7 @@ import subprocess
 import time
 import traceback
 import uuid
+import argparse
 
 from selenium import webdriver
 from selenium.webdriver.common.keys import Keys
@@ -14,19 +15,17 @@ from selenium.webdriver.firefox.options import Options as FirefoxOptions
 # You can increase this if your server is very slow.
 SERVER_WAIT = 0.5
 
-DEBUG = True
+
 browser_options = webdriver.ChromeOptions()
-if not DEBUG:
-    browser_options.add_argument("--headless")
 
 class StopGrading(Exception):
     pass
 
 class py4web(object):
 
-    def start_server(self, path_to_app, port=8800):
+    def start_server(self, path_to_app, args=None):
         print("Starting the server")
-        self.port = port
+        self.port = args.port
         self.app_name = os.path.basename(path_to_app)
 
         subprocess.run(
@@ -108,7 +107,7 @@ class ProtoAssignment(py4web):
 
     def __init__(self, app_path):
         super().__init__()
-        self.start_server(app_path)
+        self.start_server(app_path, args=args)
         self._comments = []
         self.user1 = self.get_user()
         self.user2 = self.get_user()
@@ -162,6 +161,7 @@ class Assignment(ProtoAssignment):
         """I can add one item."""
         self.login(self.user1)
         self.goto('index')
+        time.sleep(SERVER_WAIT)
         self.item = str(uuid.uuid4())
         self.browser.find_element(By.CSS_SELECTOR, "input.add-item").send_keys(self.item)
         self.browser.find_element(By.CSS_SELECTOR, "i.add-item").click()
@@ -172,6 +172,7 @@ class Assignment(ProtoAssignment):
 
     def step2(self):
         self.refresh()
+        time.sleep(SERVER_WAIT)
         item_places = self.browser.find_elements(By.CSS_SELECTOR, "table td.item")
         assert self.item in [i.text for i in item_places], "The item does not persist."
         return 2, "The item persists."
@@ -180,6 +181,7 @@ class Assignment(ProtoAssignment):
         """Another user cannot see the item."""
         self.login(self.user2)
         self.goto('index')
+        time.sleep(SERVER_WAIT)
         item_places = self.browser.find_elements(By.CSS_SELECTOR, "table td.item")
         assert self.item not in [i.text for i in item_places], "The item is visible to another user."
         return 1, "The item is not visible to another user."
@@ -187,6 +189,7 @@ class Assignment(ProtoAssignment):
     def step4(self):
         self.login(self.user1)
         self.goto('index')
+        time.sleep(SERVER_WAIT)
         self.item2 = str(uuid.uuid4())
         self.browser.find_element(By.CSS_SELECTOR, "input.add-item").send_keys(self.item2)
         self.browser.find_element(By.CSS_SELECTOR, "i.add-item").click()
@@ -199,6 +202,7 @@ class Assignment(ProtoAssignment):
 
     def step5(self):
         self.refresh()
+        time.sleep(SERVER_WAIT)
         item_rows = self.browser.find_elements(By.CSS_SELECTOR, "table tr.item-row")
         item1 = item_rows[0].find_element(By.CSS_SELECTOR, "td.item").text
         check_box = item_rows[0].find_element(By.CSS_SELECTOR, "td.check input")
@@ -215,6 +219,7 @@ class Assignment(ProtoAssignment):
     def step6(self):
         """Checks persistency of the two items."""
         self.refresh()
+        time.sleep(SERVER_WAIT)
         item_rows = self.browser.find_elements(By.CSS_SELECTOR, "table tr.item-row")
         items = [self.item0, self.item1]
         item_places = [i.text for i in item_rows]
@@ -224,6 +229,7 @@ class Assignment(ProtoAssignment):
 
     def step7(self):
         self.refresh()
+        time.sleep(SERVER_WAIT)
         self.item = str(uuid.uuid4())
         self.browser.find_element(By.CSS_SELECTOR, "input.add-item").send_keys(self.item)
         self.browser.find_element(By.CSS_SELECTOR, "i.add-item").click()
@@ -257,7 +263,7 @@ class Assignment(ProtoAssignment):
     def step8(self):
         self.login(self.user2)
         self.goto('index')
-        self.browser.implicitly_wait(0.2)
+        time.sleep(SERVER_WAIT)
         self.item0 = str(uuid.uuid4())
         self.item1 = str(uuid.uuid4())
         self.browser.find_element(By.CSS_SELECTOR, "input.add-item").send_keys(self.item0)
@@ -277,6 +283,7 @@ class Assignment(ProtoAssignment):
         assert len(item_rows) == 1, "There should be one item left."
         assert self.item0 in item_rows[0].find_element(By.CSS_SELECTOR, "td.item").text, "The correct item should be left."
         self.refresh()
+        time.sleep(SERVER_WAIT)
         item_rows = self.browser.find_elements(By.CSS_SELECTOR, "table tr.item-row")
         assert len(item_rows) == 1, "There should be one item left after refresh."
         assert self.item0 in item_rows[0].find_element(By.CSS_SELECTOR, "td.item").text, "The correct item should be left after refresh."
@@ -294,5 +301,13 @@ class Assignment(ProtoAssignment):
     # how to check that in selenium.
 
 if __name__ == "__main__":
-    tests = Assignment(".")
+    argparser = argparse.ArgumentParser()
+    argparser.add_argument("--debug", default=False, action="store_true",
+                           help="Run the grading in debug mode.")
+    argparser.add_argument("--port", default=8800, type=int, 
+                            help="Port to run the server on.")
+    args = argparser.parse_args()
+    if not args.debug:
+        browser_options.add_argument("--headless")
+    tests = Assignment(".", args=args)
     tests.grade()
