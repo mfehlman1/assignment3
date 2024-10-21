@@ -90,4 +90,4 @@ To submit, first crete the zip file, via:
 
     python zipit.py
 
-This creates the file `submission.zip`.  Submit this file to [this Google form](https://docs.google.com/forms/d/e/1FAIpQLSc5ktq6g2Aldy_7m_4yZ6jGo_wvA3fKaBfySr_TjW5SmvkumQ/viewform?usp=sf_link), and **be sure to press SUBMIT on the form**.  Just uploading the file to the form is not enough. 
+This creates the file `submission.zip`.  Submit this file to the Google Form, and **be sure to press SUBMIT on the form**.  Just uploading the file to the form is not enough. 

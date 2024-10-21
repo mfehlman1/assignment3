@@ -204,7 +204,7 @@ class Assignment(ProtoAssignment):
         check_box = item_rows[0].find_element(By.CSS_SELECTOR, "td.check input")
         assert not check_box.is_selected(), "The checkbox should not be selected."
         check_box.click()
-        self.browser.implicitly_wait(0.2)
+        time.sleep(SERVER_WAIT)
         # Now the checked item should be in position 2.
         item_rows = self.browser.find_elements(By.CSS_SELECTOR, "tr.item-row")
         assert item1 in item_rows[1].find_element(By.CSS_SELECTOR, "td.item").text, "The checked item should be in position 2."
