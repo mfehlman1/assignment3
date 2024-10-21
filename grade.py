@@ -15,9 +15,6 @@ from selenium.webdriver.firefox.options import Options as FirefoxOptions
 # You can increase this if your server is very slow.
 SERVER_WAIT = 0.5
 
-
-browser_options = webdriver.ChromeOptions()
-
 class StopGrading(Exception):
     pass
 
@@ -64,7 +61,14 @@ class py4web(object):
                     raise StopGrading
                 print("- app started!")
                 break
+        browser_options = webdriver.ChromeOptions()
+        if not args.debug:
+            browser_options.add_argument("--headless")
         self.browser =  webdriver.Chrome(options=browser_options)
+        # browser_options = FirefoxOptions()
+        # if not args.debug:
+        #     browser_options.add_argument("--headless")
+        # self.browser = webdriver.Firefox(options=browser_options)
 
     def __del__(self):
         pass
@@ -105,7 +109,7 @@ class py4web(object):
 
 class ProtoAssignment(py4web):
 
-    def __init__(self, app_path):
+    def __init__(self, app_path, args=None):
         super().__init__()
         self.start_server(app_path, args=args)
         self._comments = []
@@ -153,8 +157,8 @@ class ProtoAssignment(py4web):
 
 class Assignment(ProtoAssignment):
 
-    def __init__(self, app_path):
-        super().__init__(os.path.join(app_path, "apps/shopping"))
+    def __init__(self, app_path, args=None):
+        super().__init__(os.path.join(app_path, "apps/shopping"), args=args)
         self.item = ""
 
     def step1(self):
@@ -307,7 +311,5 @@ if __name__ == "__main__":
     argparser.add_argument("--port", default=8800, type=int, 
                             help="Port to run the server on.")
     args = argparser.parse_args()
-    if not args.debug:
-        browser_options.add_argument("--headless")
     tests = Assignment(".", args=args)
     tests.grade()
