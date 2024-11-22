@@ -46,7 +46,7 @@ def index():
     )
 
 @action('load_data')
-@action.uses(db, auth.user)
+@action.uses(db, session, auth.user)
 def load_data():
     # Complete.
     items = db(db.shopping_list.user_id == auth.current_user.get('id')).select(orderby=[db.shopping_list.is_purchased, ~db.shopping_list.id])
@@ -54,7 +54,7 @@ def load_data():
 
 # You can add other controllers here.
 @action('add_item', method=['POST'])
-@action.uses(db, auth.user)
+@action.uses(db, session, auth.user)
 def add_item():
     item_name = request.json.get('item_name')
     if item_name:
@@ -65,7 +65,7 @@ def add_item():
         return dict(status='error', message='Please insert an item with its name')
 
 @action('update_item', method=['POST'])
-@action.uses(db, auth.user)
+@action.uses(db, session, auth.user)
 def update_item():
     item_id = request.json.get('item_id')
     is_purchased = request.json.get('is_purchased')
@@ -78,7 +78,7 @@ def update_item():
 
 
 @action('delete_item', method=['POST'])
-@action.uses(db, auth.user)
+@action.uses(db, session, auth.user)
 def delete_item():
     item_id = request.json.get('item_id')
     if item_id:
