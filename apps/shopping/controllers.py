@@ -29,12 +29,12 @@ from py4web import action, request, abort, redirect, URL
 from yatl.helpers import A
 from .common import db, session, T, cache, auth, logger, authenticated, unauthenticated, flash
 from py4web.utils.url_signer import URLSigner
-from .models import get_user_email
+from .models import get_user_emailS
 
 url_signer = URLSigner(session)
 
 @action('index')
-@action.uses('index.html', db, auth.user)
+@action.uses('index.html', db, session, auth.user)
 def index():
     return dict(
         # For example...
