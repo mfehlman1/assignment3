@@ -38,14 +38,52 @@ url_signer = URLSigner(session)
 def index():
     return dict(
         # For example...
-        load_data_url = URL('load_data'),
+        load_data_url=URL('load_data', signer=url_signer), 
         # Add other things here.
+        add_item_url= URL('add_item', signer=url_signer),
+        update_item_url = URL('update_item', signer=url_signer),
+        delete_item_url = URL('delete_item', signer=url_signer)
     )
 
 @action('load_data')
 @action.uses(db, auth.user)
 def load_data():
     # Complete.
-    return dict()
+    items = db(db.shopping_list.user_id == auth.current_user.get('id')).select(orderby=[db.shopping_list.is_purchased, ~db.shopping_list.id])
+    return dict(items=items.as_list())
 
 # You can add other controllers here.
+@action('add_item', method=['POST'])
+@action.uses(db, auth.user)
+def add_item():
+    item_name = request.json.get('item_name')
+    if item_name:
+        item_id = db.shopping_list.insert(item_name=item_name, user_id=auth.current_user.get('id'))
+        db.commit()
+        return dict(status='success', item_id=item_id, message='Item added successfully') 
+    else:
+        return dict(status='error', message='Please insert an item with its name')
+
+@action('update_item', method=['POST'])
+@action.uses(db, auth.user)
+def update_item():
+    item_id = request.json.get('item_id')
+    is_purchased = request.json.get('is_purchased')
+    if item_id is not None and is_purchased is not None:
+        db(db.shopping_list.id == item_id).update(is_purchased=is_purchased)
+        db.commit()
+        return dict(status='success', message='Item updated successfully')
+    else:
+        return dict(status='error',message='Incorrect item id or purchase status')
+
+
+@action('delete_item', method=['POST'])
+@action.uses(db, auth.user)
+def delete_item():
+    item_id = request.json.get('item_id')
+    if item_id:
+        db(db.shopping_list.id == item_id).delete()
+        db.commit()
+        return dict(status='success', message='Item deleted successfully')
+    else:
+        return dict(status='error', message='Incorrect item id')

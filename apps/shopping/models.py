@@ -4,7 +4,7 @@ This file defines the database models
 
 import datetime
 from .common import db, Field, auth
-from pydal.validators import *
+from pydal.validators import * 
 
 
 def get_user_email():
@@ -17,5 +17,11 @@ def get_time():
 # db.define_table('shopping_list',
 #    Field('product_name', requires=IS_NOT_EMPTY()),
 #    )
+
+db.define_table(
+    'shopping_list',
+    Field('item_name','string', requires=IS_NOT_EMPTY(),label="Item Name"),
+    Field('is_purchased','boolean', requires=False,label="Purchased"),
+    Field('user_id','reference auth_user',default=auth.current_user.get('id') if auth.current_user else None))
 
 db.commit()
